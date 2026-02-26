@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# stellae.socials
+
+Social media asset generator for the Stellae ecosystem. Generate branded social media graphics for all 8 Stellae products across 5 platform sizes.
+
+## Features
+
+- **6 Templates**: Announcement, Feature Highlight, Stat Card, Testimonial, Comparison, Product Launch
+- **8 Brands**: stellae.design, .tokens, .drift, .import, .studio, .scale, .flow, .theme
+- **5 Platforms**: Twitter (1200×675), LinkedIn (1200×627), Instagram Post (1080×1080), Instagram Story (1080×1920), Facebook (1200×630)
+- **Real-time Preview**: Live Satori rendering in the editor
+- **Batch Export**: Generate all platform sizes at once
+- **API-first**: Full REST API for agent/automation access
+
+## Stack
+
+- Next.js 15 (App Router), TypeScript, Tailwind CSS
+- Satori + @resvg/resvg-js for image rendering
+- Sharp for format conversion (PNG/JPG/WebP)
+- SQLite + Drizzle ORM
+- Local filesystem storage (R2-ready)
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Clone
+git clone https://github.com/prosenik/stellae-socials.git
+cd stellae-socials
+
+# Install
+npm install
+
+# Run
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+DATABASE_PATH=./data/stellae.db
+STORAGE_DIR=./storage
+```
 
-## Learn More
+Optional R2 config (for production):
+```env
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=
+R2_PUBLIC_URL=
+```
 
-To learn more about Next.js, take a look at the following resources:
+## API
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Generate Single Asset
+```bash
+POST /api/generate
+{
+  "templateId": "announcement",
+  "brandId": "stellae-studio",
+  "platform": "twitter",
+  "variables": { "headline": "Hello World" },
+  "format": "png"
+}
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Batch Generate (All Platforms)
+```bash
+POST /api/generate/batch
+{
+  "templateId": "announcement",
+  "brandId": "stellae-studio",
+  "variables": { "headline": "Hello World" }
+}
+```
 
-## Deploy on Vercel
+### List Templates
+```bash
+GET /api/templates
+GET /api/templates/:id
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### List Brands
+```bash
+GET /api/brands
+GET /api/brands/:id
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Assets
+```bash
+GET /api/assets/:id
+GET /api/assets/:id/download
+```
+
+## Docker
+
+```bash
+docker compose up -d
+```
+
+## Architecture
+
+Templates are React components rendered via Satori (JSX → SVG → PNG). Each template accepts `{ brand, variables, width, height }` props and adapts to any platform dimension. Brand configs define colors, fonts, and logos. The rendering pipeline: Satori → resvg (PNG) → Sharp (format conversion) → storage.

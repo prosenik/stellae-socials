@@ -1,0 +1,17 @@
+services:
+  socials:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BASE_URL=http://localhost:3000
+      - DATABASE_PATH=/app/data/stellae.db
+      - STORAGE_DIR=/app/storage
+    volumes:
+      - socials-data:/app/data
+      - socials-storage:/app/storage
+    restart: unless-stopped
+
+volumes:
+  socials-data:
+  socials-storage:
